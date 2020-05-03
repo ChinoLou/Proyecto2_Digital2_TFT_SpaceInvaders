@@ -5,6 +5,7 @@
  * Con ayuda de: José Guerra
  * IE3027: Electrónica Digital 2 - 2019
  * Menu principal y botones listos!
+ * Movimiento horizontal naves - Listo!
  */
 //***************************************************************************************************************************************
 #include <stdint.h>
@@ -67,9 +68,11 @@ void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int 
 //***************************************************************************************************************************************
 // Variables Globales & Variables Botones
 //***************************************************************************************************************************************
-uint8_t x1_i   = 0; //Variables para indicies del control de movimiento naves jugadores 
-uint8_t x2_i = 0;
-uint8_t x3_i = 0;
+uint8_t  x1_i = 0; //Variables para indicies del control de movimiento naves jugadores 
+uint8_t  x3_i = 0;
+uint16_t x2_i = 0;
+
+
 
 uint8_t flag_juego = 0;
 int ESTADO1    = 0; //variable para antirebote principal
@@ -131,6 +134,8 @@ void setup() {
   FillRect(97, 100, 126, 40,0x00);
   LCD_Bitmap(97, 100, 126, 40, Fondo_UNO);
 
+  x2_i = 301; //posx final para nave 2
+
 
   
 }
@@ -161,13 +166,16 @@ void loop() {
     for(int x = 0; x <320-18; x++){
       delay(15);
       int anim2 = (x/15)%3; 
-      int anim_UNO = (x/15)%1; 
+      int anim_uno = (x/15)%1; 
       int anim_DOS = (x/15)%2; 
+
+      LCD_Sprite(x,60,18,21,GALAGA_uno,1,anim_uno,0,1);  
+      V_line(x-2, 60, 21, 0x00); 
       
-      LCD_Sprite(x,90,18,21,GALAGA_UNO,3,anim_UNO,0,1);  
+      LCD_Sprite(x,90,18,21,GALAGA_dos,1,anim_uno,0,1);  
       V_line(x-2, 90, 21, 0x00); 
 
-      LCD_Sprite(x,120,18,21,GALAGA_UNO,3,anim_DOS,0,1);  
+      LCD_Sprite(x,120,18,21,GALAGA_tres,1,anim_uno,0,1);  
       V_line(x-2, 120, 21, 0x00); 
       
       LCD_Sprite(x,150,20,20,ALIEN_UNO,4,anim2,0,1); 
@@ -235,42 +243,51 @@ void loop() {
   Estado_SW4   = digitalRead(SW4);
 
   int anim1 = (x1_i/5)%2;
+  //x2_i = 160;
+  
 
 // ---------------- Jugador 1 -----------------------
 
   if(Estado_SW1 == HIGH && x1_i > 0){ //Izquierda
       x1_i = x1_i-1; 
-      delay(10);
       }
 
-      LCD_Sprite(x1_i,175,16,24,planta,2,anim1,0,1);
-      V_line( x1_i-2, 175, 24, 0x421b);
+      LCD_Bitmap(x1_i, 220, 18, 21, GALAGA_uno);
+       V_line( x1_i-2, 220, 21, 0x00);
 
-   if(Estado_SW2 == HIGH && x1_i < 160-16){ //Derecha
+   if(Estado_SW2 == HIGH && x1_i < 160-18){ //Derecha
       x1_i = x1_i+1;
-      delay(10);
       }
 
-      LCD_Sprite(x1_i,175,16,24,planta,2,anim1,0,1);
-      V_line( x1_i+1, 175, 24, 0x421b);
+      LCD_Bitmap(x1_i, 220, 18, 21, GALAGA_uno);
+       V_line( x1_i+1, 220, 21, 0x00);
 
 // --------------  Jugador 2  ---------------------
 
-  if(Estado_SW3 == HIGH && x2_i > 0){ //Izquierda
+
+
+  if(Estado_SW3 == HIGH && x2_i > 160){ //der
       x2_i = x2_i-1; 
-      delay(10);
+      //delay(2);
       }
 
-      LCD_Sprite(x2_i,136,16,24,planta,2,anim1,0,1);
-      V_line( x2_i-1, 136, 24, 0x421b);
+      // LCD_Sprite(x2_i,175,18,24,GALAGA_dos,2,0,0,1);
+      LCD_Bitmap(x2_i, 220, 18, 21, GALAGA_dos);
+        V_line( x2_i-1,220,   21, 0x00);
 
-   if(Estado_SW4 == HIGH && x2_i < 160-16){ //Derecha
+        
+       
+
+   if(Estado_SW4 == HIGH && x2_i < 320-18){ //Derecha
       x2_i = x2_i+1;
-      delay(10);
+      //delay(2);
       }
 
-      LCD_Sprite(x2_i,136,16,24,planta,2,anim1,0,1);
-      V_line( x2_i+1, 136, 24, 0x421b);     
+      //LCD_Sprite(x2_i,136,18,24,planta,2,anim1,0,1);
+      LCD_Bitmap(x2_i, 220, 18, 21, GALAGA_dos);
+       V_line( x2_i+1, 220, 21, 0x00);     
+       
+       
 
   }
       
