@@ -4,6 +4,7 @@
  * Adaptación, migración y creación de nuevas funciones: Pablo Mazariegos y José Morales
  * Con ayuda de: José Guerra
  * IE3027: Electrónica Digital 2 - 2019
+ * Menu principal y botones listos!
  */
 //***************************************************************************************************************************************
 #include <stdint.h>
