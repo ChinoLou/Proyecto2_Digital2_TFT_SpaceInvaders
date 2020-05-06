@@ -71,7 +71,7 @@ void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int 
 uint8_t  x1_i = 0; //Variables para indicies del control de movimiento naves jugadores 
 uint8_t  x3_i = 0;
 uint16_t x2_i = 0;
-
+uint16_t y1_mi = 0;
 
 
 uint8_t flag_juego = 0;
@@ -102,7 +102,8 @@ bool Estado_SW4 = 0;
 bool Estado_SW5 = 0;
 bool Estado_SW6 = 0;
   
-bool flag_start = 0;      //bandera para escoger modo de juego
+bool flag_start = 0;                    //bandera para escoger modo de juego
+unsigned long previousMillis = 0;       // will store last time LED was updated
       
 
 //-------------------------------------------------------------------------
@@ -184,11 +185,8 @@ void loop() {
       LCD_Sprite(x,180,20,20,ALIEN_DOS,4,anim2,0,1); 
       V_line(x-2, 180, 20, 0x00);  
 
-      LCD_Sprite(x,210,20,20,ALIEN_TRESS,2,anim2,0,1); 
+      LCD_Sprite(x,210,20,20,ALIEN_TRES,2,anim2,0,1); 
       V_line(x-2, 210, 20, 0x00);  
-
-      
-
       }
     }
 
@@ -231,7 +229,19 @@ void loop() {
 
     //goto juego1;
     //juego1:;  // continúa el código
-   
+
+/*
+  unsigned long currentMillis = millis();
+  if(currentMillis - previousMillis > 50) {
+    // save the last time you blinked the LED 
+    y1_mi = y1_mi + 1; 
+    previousMillis = currentMillis;   
+  }
+
+   LCD_Bitmap(0, y1_mi, 18, 21, GALAGA_uno);
+     V_line( 0-2,y1_mi, 21, 0x00);
+
+     */
 //--------------------------------------------------------------------------------
 
 
@@ -244,7 +254,85 @@ void loop() {
 
   int anim1 = (x1_i/5)%2;
   //x2_i = 160;
+
   
+// ---------------- Mov. Aliens -----------------------
+
+  unsigned long currentMillis = millis();         //Funcion para Movimiento Aliens automático!!!
+  if(currentMillis - previousMillis > 500) {
+    // save the last time you blinked the LED 
+    y1_mi = y1_mi + 1; 
+    previousMillis = currentMillis; 
+
+//------------------------------------------------
+  LCD_Bitmap(30, y1_mi, 20, 20, ALIEN_uno);
+    V_line( 30-2,y1_mi, 20, 0x00);   
+
+  LCD_Bitmap(30, y1_mi+20, 20, 20, ALIEN_dos);
+    V_line( 30-2,y1_mi+20, 20, 0x00);  
+
+  LCD_Bitmap(30, y1_mi+40, 20, 20, ALIEN_tres);
+    V_line( 30-2,y1_mi+40, 20, 0x00);      
+//------------------------------------------------
+  LCD_Bitmap(70, y1_mi, 20, 20, ALIEN_uno);
+    V_line( 70-2,y1_mi, 20, 0x00);   
+
+  LCD_Bitmap(70, y1_mi+20, 20, 20, ALIEN_dos);
+    V_line( 70-2,y1_mi+20, 20, 0x00);  
+
+  LCD_Bitmap(70, y1_mi+40, 20, 20, ALIEN_tres);
+    V_line( 70-2,y1_mi+40, 20, 0x00);        
+//------------------------------------------------
+  LCD_Bitmap(110, y1_mi, 20, 20, ALIEN_uno);
+    V_line( 110-2,y1_mi, 20, 0x00);   
+
+  LCD_Bitmap(110, y1_mi+20, 20, 20, ALIEN_dos);
+    V_line( 110-2,y1_mi+20, 20, 0x00);   
+
+  LCD_Bitmap(110, y1_mi+40, 20, 20, ALIEN_tres);
+    V_line( 110-2,y1_mi+40, 20, 0x00);                 
+//-------------- ************** ---------------------
+
+  LCD_Bitmap(150, y1_mi, 20, 20, ALIEN_uno);
+    V_line(150-2,y1_mi, 20, 0x00);   
+
+  LCD_Bitmap(150, y1_mi+20, 20, 20, ALIEN_dos);
+    V_line( 150-2,y1_mi+20, 20, 0x00);     
+
+  LCD_Bitmap(150, y1_mi+40, 20, 20, ALIEN_tres);
+    V_line( 150-2,y1_mi+40, 20, 0x00);      
+//------------------------------------------------
+  LCD_Bitmap(190, y1_mi, 20, 20, ALIEN_uno);
+    V_line( 190-2,y1_mi, 20, 0x00);   
+
+  LCD_Bitmap(190, y1_mi+20, 20, 20, ALIEN_dos);
+    V_line( 190-2,y1_mi+20, 20, 0x00);  
+
+  LCD_Bitmap(190, y1_mi+40, 20, 20, ALIEN_tres);
+    V_line( 190-2,y1_mi+40, 20, 0x00);      
+
+//------------------------------------------------
+  LCD_Bitmap(230, y1_mi, 20, 20, ALIEN_uno);
+    V_line( 230-2,y1_mi, 20, 0x00);   
+
+  LCD_Bitmap(230, y1_mi+20, 20, 20, ALIEN_dos);
+    V_line( 230-2,y1_mi+20, 20, 0x00);  
+
+  LCD_Bitmap(230, y1_mi+40, 20, 20, ALIEN_tres);
+    V_line( 230-2,y1_mi+40, 20, 0x00);      
+//------------------------------------------------
+  LCD_Bitmap(270, y1_mi, 20, 20, ALIEN_uno);
+    V_line( 270-2,y1_mi, 20, 0x00);   
+
+  LCD_Bitmap(270, y1_mi+20, 20, 20, ALIEN_dos);
+    V_line( 270-2,y1_mi+20, 20, 0x00); 
+
+  LCD_Bitmap(270, y1_mi+40, 20, 20, ALIEN_tres);
+    V_line( 270-2,y1_mi+40, 20, 0x00);       
+
+//-------------- ************** ---------------------
+}
+
 
 // ---------------- Jugador 1 -----------------------
 
@@ -270,55 +358,21 @@ void loop() {
       x2_i = x2_i-1; 
       //delay(2);
       }
-
       // LCD_Sprite(x2_i,175,18,24,GALAGA_dos,2,0,0,1);
       LCD_Bitmap(x2_i, 220, 18, 21, GALAGA_dos);
         V_line( x2_i-1,220,   21, 0x00);
-
-        
-       
 
    if(Estado_SW4 == HIGH && x2_i < 320-18){ //Derecha
       x2_i = x2_i+1;
       //delay(2);
       }
-
       //LCD_Sprite(x2_i,136,18,24,planta,2,anim1,0,1);
       LCD_Bitmap(x2_i, 220, 18, 21, GALAGA_dos);
        V_line( x2_i+1, 220, 21, 0x00);     
-       
-       
-
-  }
+      }
       
-
-     
-//--------------------------------------------------------------------
-
-
-  /*
-  for(int x = 320-32; x >0; x--){
-    delay(5);
-    int anim = (x/11)%8;
-    int anim2 = (x/11)%2;
-    
-    LCD_Sprite(x,100,16,24,planta,2,anim2,0,0);
-    V_line( x + 16, 100, 24, 0x421b);
-    
-    //LCD_Bitmap(x, 100, 32, 32, prueba);
-    
-    //LCD_Sprite(x, 140, 16, 16, enemy,2, anim2,0, 0);
-    //V_line( x + 16, 140, 16, 0x421b);
-    
-    //LCD_Sprite(x, 175, 16, 32, luigi,8, anim,0, 0);
-    //V_line( x + 16, 175, 32, 0x421b);
-
-    //LCD_Sprite(x, 20, 16, 32, mario,8, anim,0, 0);
-    //V_line( x + 16, 20, 32, 0x421b);
-  } 
-*/
-
-}
+//-------------------------------------------------------------------
+} //Llave loop principal
 
 //***************************************************************************************************************************************
 // Función para inicializar LCD
