@@ -173,64 +173,88 @@ int notes = sizeof(melody_star_wars) / sizeof(melody_star_wars[0]) / 2;
 // this calculates the duration of a whole note in ms
 int wholenote  = (60000 * 4) / tempo;
 int wholenote2 = (60000 * 4) / tempo2;
-
 int divider = 0, noteDuration = 0;
 
+// Variables para el cambio de cacncion con los pines de señal de la Tiva
+const int Tiva_M1 = 2;     // the number of the pushbutton pin
+const int Tiva_M2 = 8;     // the number of the pushbutton pin
+const int ledPin =  13;    // the number of the LED pin INDICADOR
+
+// variables will change:
+bool Tiva_M1_ON = 0;
+bool Tiva_M2_ON = 0;
+
+
 void setup() {
-  // iterate over the notes of the melody. 
-  // Remember, the array is twice the number of notes (notes + durations)
-  
+  pinMode(ledPin, OUTPUT);
+  pinMode(Tiva_M1, INPUT);
+  pinMode(Tiva_M2, INPUT);
 }
 
 void loop() {
-  // no need to repeat the melody.
-
-  for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
-
-    // calculates the duration of each note
-    divider = melody_star_wars[thisNote + 1];
-    if (divider > 0) {
-      // regular note, just proceed
-      noteDuration = (wholenote) / divider;
-    } else if (divider < 0) {
-      // dotted notes are represented with negative durations!!
-      noteDuration = (wholenote) / abs(divider);
-      noteDuration *= 1.5; // increases the duration in half for dotted notes
+  Tiva_M1_ON  = digitalRead(Tiva_M1);
+  Tiva_M2_ON  = digitalRead(Tiva_M2);
+  
+  if (Tiva_M1_ON == HIGH) {
+    digitalWrite(ledPin, HIGH); //Led indicador
+  
+    for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
+  
+      // calculates the duration of each note
+      divider = melody_star_wars[thisNote + 1];
+      if (divider > 0) {
+        // regular note, just proceed
+        noteDuration = (wholenote) / divider;
+      } else if (divider < 0) {
+        // dotted notes are represented with negative durations!!
+        noteDuration = (wholenote) / abs(divider);
+        noteDuration *= 1.5; // increases the duration in half for dotted notes
+      }
+  
+      // we only play the note for 90% of the duration, leaving 10% as a pause
+      tone(buzzer, melody_star_wars[thisNote], noteDuration*0.9);
+  
+      // Wait for the specief duration before playing the next note.
+      delay(noteDuration);
+      
+      // stop the waveform generation before the next note.
+      noTone(buzzer);
     }
-
-    // we only play the note for 90% of the duration, leaving 10% as a pause
-    tone(buzzer, melody_star_wars[thisNote], noteDuration*0.9);
-
-    // Wait for the specief duration before playing the next note.
-    delay(noteDuration);
     
-    // stop the waveform generation before the next note.
-    noTone(buzzer);
   }
 
 
-  for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
+  if (Tiva_M2_ON == HIGH) {
+    digitalWrite(ledPin, LOW);
+    delay(10);
+    digitalWrite(ledPin, HIGH);
 
-    // calculates the duration of each note
-    divider = melody_godfather[thisNote + 1];
-    if (divider > 0) {
-      // regular note, just proceed
-      noteDuration = (wholenote) / divider;
-    } else if (divider < 0) {
-      // dotted notes are represented with negative durations!!
-      noteDuration = (wholenote) / abs(divider);
-      noteDuration *= 1.5; // increases the duration in half for dotted notes
+    for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
+  
+      // calculates the duration of each note
+      divider = melody_godfather[thisNote + 1];
+      if (divider > 0) {
+        // regular note, just proceed
+        noteDuration = (wholenote) / divider;
+      } else if (divider < 0) {
+        // dotted notes are represented with negative durations!!
+        noteDuration = (wholenote) / abs(divider);
+        noteDuration *= 1.5; // increases the duration in half for dotted notes
+      }
+  
+      // we only play the note for 90% of the duration, leaving 10% as a pause
+      tone(buzzer, melody_godfather[thisNote], noteDuration * 0.9);
+  
+      // Wait for the specief duration before playing the next note.
+      delay(noteDuration);
+  
+      // stop the waveform generation before the next note.
+      noTone(buzzer);
+      
     }
-
-    // we only play the note for 90% of the duration, leaving 10% as a pause
-    tone(buzzer, melody_godfather[thisNote], noteDuration * 0.9);
-
-    // Wait for the specief duration before playing the next note.
-    delay(noteDuration);
-
-    // stop the waveform generation before the next note.
-    noTone(buzzer);
+    
   }
+ 
 
   
 }

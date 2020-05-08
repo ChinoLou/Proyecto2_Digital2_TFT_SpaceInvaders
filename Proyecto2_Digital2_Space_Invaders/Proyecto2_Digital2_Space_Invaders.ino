@@ -2,10 +2,10 @@
 /* Librería para el uso de la pantalla ILI9341 en modo 8 bits
  * Basado en el código de martinayotte - https://www.stm32duino.com/viewtopic.php?t=637
  * Adaptación, migración y creación de nuevas funciones: Pablo Mazariegos y José Morales
- * Con ayuda de: José Guerra
  * IE3027: Electrónica Digital 2 - 2019
- * Menu principal y botones listos!
- * Movimiento horizontal naves - Listo!
+ * Steven Josue Castillo Lou - 17169
+ * Vincenzo Musella 
+ * (solo falta sd y comparacion balas 2)
  */
 //***************************************************************************************************************************************
 #include <stdint.h>
@@ -48,6 +48,9 @@ int DPINS[] = {PB_0, PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7};
 #define BOTON5 PC_5
 #define BOTON6 PC_4
 
+#define Music1_ON PA_5  //Boton para musica --> salida para conectar a arduino y activas o cambiar de melodia 
+#define Music2_ON PE_2  //Boton para musica --> salida para conectar a arduino y activas o cambiar de melodia 
+
 //***************************************************************************************************************************************
 // Functions Prototypes
 //***************************************************************************************************************************************
@@ -65,6 +68,15 @@ uint8_t collider(uint16_t objeto1[], uint16_t objeto2[], uint8_t d1[] , uint8_t 
 void LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char bitmap[]);
 void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
 uint8_t naves_choque(uint8_t posicion);
+
+extern uint8_t Fondo_UNO_X2 [];
+extern uint8_t ALIEN_uno    [];
+extern uint8_t ALIEN_dos    [];
+extern uint8_t ALIEN_tres   [];
+extern uint8_t GALAGA_uno   [];
+extern uint8_t GALAGA_dos   [];
+extern uint8_t GALAGA_tres  [];
+
 //***************************************************************************************************************************************
 // Variables Globales & Variables Botones
 //***************************************************************************************************************************************
@@ -116,8 +128,9 @@ bool Estado_SW5 = 0;
 bool Estado_SW6 = 0;
 
 
-  
-bool flag_start  = 0;                     //bandera para escoger modo de juego
+bool flag_start   = 0;              //bandera para escoger modo de juego
+bool flag_music1  = 0;              //Bandera para melodia 1 --> Star Wars
+bool flag_music2  = 0;
 
 
 unsigned long previousMillis  = 0;       // will store last time 
@@ -169,10 +182,7 @@ void setup() {
   
   // Entradas digitales para controlar el juego
   pinMode(START, INPUT_PULLUP);
-  pinMode(NEXT,  INPUT_PULLUP);
-  pinMode(LED_R, OUTPUT);  
-  pinMode(LED_G, OUTPUT);  
-  pinMode(LED_B, OUTPUT);  
+  pinMode(NEXT,  INPUT_PULLUP);  
 
   pinMode(BOTON1, INPUT_PULLUP);
   pinMode(BOTON2, INPUT_PULLUP);
@@ -180,11 +190,22 @@ void setup() {
   pinMode(BOTON4, INPUT_PULLUP);
   pinMode(BOTON5, INPUT_PULLUP);
   pinMode(BOTON6, INPUT_PULLUP);
+
+  // Salidias digitales para controlar la musica reproducida desde el arduino
+  pinMode(LED_R, OUTPUT);  
+  pinMode(LED_G, OUTPUT);  
+  pinMode(LED_B, OUTPUT);
+  pinMode(Music1_ON,  OUTPUT); //Pin PA_5 --> a entrada1 arduino
+  pinMode(Music2_ON,  OUTPUT); //Pin PE_2 --> a entrada2 arduino
+
+
   // ------------------------------------------
   delay(1000);
   
   FillRect(97, 100, 126, 40,0x00);
-  LCD_Bitmap(97, 100, 126, 40, Fondo_UNO);
+  //LCD_Bitmap(97, 100, 126, 40, Fondo_UNO); 
+  LCD_Bitmap(34, 80, 252, 80, Fondo_UNO_X2);
+  digitalWrite(Music1_ON, HIGH);
 
   x2_i      = 301; //posx final para nave 2
   y1_atack1 = 200; //posy inicial para las balas de la nave 1 
@@ -251,7 +272,9 @@ void loop() {
 
     if (Estado_NEXT == LOW){ 
     var = (var + 1)%3;// modulo de la var del switch case
+    digitalWrite(Music1_ON, LOW);
     delay(250);
+    digitalWrite(Music2_ON, HIGH);
     }
     
     switch (var) {  
@@ -285,7 +308,7 @@ void loop() {
   //FillRect(0, 0, 319, 239,0x00);
     LCD_Clear(0x00);
     flag_start = 1;
-    }
+    } 
 
     //goto juego1;
     //juego1:;  // continúa el código
