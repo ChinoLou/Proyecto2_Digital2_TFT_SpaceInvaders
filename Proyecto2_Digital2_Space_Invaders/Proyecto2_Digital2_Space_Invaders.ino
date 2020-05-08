@@ -61,10 +61,10 @@ void V_line(unsigned int x, unsigned int y, unsigned int l, unsigned int c);
 void Rect(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int c);
 void FillRect(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int c);
 void LCD_Print(String text, int x, int y, int fontSize, int color, int background);
-
+uint8_t collider(uint16_t objeto1[], uint16_t objeto2[], uint8_t d1[] , uint8_t d2[]); 
 void LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char bitmap[]);
 void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
-
+uint8_t naves_choque(uint8_t posicion);
 //***************************************************************************************************************************************
 // Variables Globales & Variables Botones
 //***************************************************************************************************************************************
@@ -73,9 +73,19 @@ uint8_t  x3_i = 0;
 uint16_t x2_i = 0;
 uint16_t y1_mi = 0;
 
-uint16_t  xi_bala = 0;
-uint16_t y1_atack1 = 0;
+uint16_t  xi_bala   = 0;          //variables para bala Nave UNO
+uint16_t  y1_atack1 = 0;
+uint8_t   t         = 0; 
+bool flag_balas     = 0;             //Bandera para bala 1                   
+bool habilitar_disparo = true; 
 
+
+ 
+
+uint16_t  xi_bala2  = 0;           //variables para bala Nave DOS
+uint16_t  y2_atack2 = 0;
+bool flag_balas2    = 0;             //Bandera para bala 1    
+bool habilitar_disparo2 = true; 
 
 uint8_t flag_juego = 0;
 int ESTADO1    = 0; //variable para antirebote principal
@@ -104,16 +114,47 @@ bool Estado_SW3 = 0;
 bool Estado_SW4 = 0;
 bool Estado_SW5 = 0;
 bool Estado_SW6 = 0;
+
+
   
 bool flag_start  = 0;                     //bandera para escoger modo de juego
-bool flag_balas  = 0; 
-bool flag_balas2 = 0;
+
 
 unsigned long previousMillis  = 0;       // will store last time 
 unsigned long previousMillis2 = 0;       // will store last time2
-      
 
+uint16_t posicion_bala[]={0,0};
+
+                                      
+
+uint16_t objeto1[] = {30,0};             //objetos para comparar coordenadas x,y de los 21 aliens
+uint16_t objeto2[] = {30,0};             
+uint16_t objeto3[] = {30,0};
+uint16_t objeto4[] = {70,0};
+uint16_t objeto5[] = {70,0};
+uint16_t objeto6[] = {70,0};
+uint16_t objeto7[] = {110,0};
+uint16_t objeto8[] = {110,0};
+uint16_t objeto9[] = {110,0};
+uint16_t objeto10[]= {150,0};
+uint16_t objeto11[]= {150,0};
+uint16_t objeto12[]= {150,0};
+uint16_t objeto13[]= {190,0};
+uint16_t objeto14[]= {190,0};
+uint16_t objeto15[]= {190,0};
+uint16_t objeto16[]= {230,0};
+uint16_t objeto17[]= {230,0};
+uint16_t objeto18[]= {230,0};
+uint16_t objeto19[]= {270,0};
+uint16_t objeto20[]= {270,0};
+uint16_t objeto21[]= {270,0};
 //-------------------------------------------------------------------------
+uint8_t  choque[] = {};
+int  n = 0; 
+int  n2= 0;
+uint8_t d1[]={2,8};
+uint8_t d2[]={10,10};
+
 
 //***************************************************************************************************************************************
 // Inicialización
@@ -141,11 +182,13 @@ void setup() {
   pinMode(BOTON6, INPUT_PULLUP);
   // ------------------------------------------
   delay(1000);
+  
   FillRect(97, 100, 126, 40,0x00);
   LCD_Bitmap(97, 100, 126, 40, Fondo_UNO);
 
   x2_i      = 301; //posx final para nave 2
-  y1_atack1 = 200; //posy inicial para las balas 
+  y1_atack1 = 200; //posy inicial para las balas de la nave 1 
+  y2_atack2 = 200; //posy inicial para las balas de la nave 2 
 
  // H_line( 10, 50+15, 20, 0xfff);
 
@@ -239,30 +282,18 @@ void loop() {
   if(flag_juego == 1){
     digitalWrite(LED_G, LOW); 
     digitalWrite(LED_B, HIGH);  
-    FillRect(0, 0, 319, 239,0x00);
+  //FillRect(0, 0, 319, 239,0x00);
+    LCD_Clear(0x00);
     flag_start = 1;
     }
 
     //goto juego1;
     //juego1:;  // continúa el código
 
-/*
-  unsigned long currentMillis = millis();
-  if(currentMillis - previousMillis > 50) {
-    // save the last time you blinked the LED 
-    y1_mi = y1_mi + 1; 
-    previousMillis = currentMillis;   
-  }
 
-   LCD_Bitmap(0, y1_mi, 18, 21, GALAGA_uno);
-     V_line( 0-2,y1_mi, 21, 0x00);
-
-     unsigned long tiempo = millis(); 
-     return(tiempo); 
-
-     */
 //--------------------------------------------------------------------------------
 
+//---------------------------------------------------------------
 
   while (flag_start) {
 
@@ -285,9 +316,12 @@ void loop() {
   unsigned long currentMillis = millis();         //Funcion para Movimiento Aliens automático!!!
   if(currentMillis - previousMillis > 500) {
     y1_mi = y1_mi + 1; 
-    //y1_atack1 = y1_atack1 - 1; 
     previousMillis  = currentMillis; 
     previousMillis2 = previousMillis+5; 
+
+  if (y1_mi == 319){
+      y1_mi = 0; 
+  }
 
 
 //------------------------------------------------
@@ -361,60 +395,151 @@ void loop() {
   //LCD_Bitmap(0, y1_mi+40,  3, 15, BALA_uno);
      //H_line( 0 ,y1_mi+40,  3, 0x0000);
       
-
-
-
+         
 
 //-------------- ************** -----------------------
 }
 
+objeto1[1] ={y1_mi};      // Definicion de los objetos de las coord.y(coordenada variable) de LOS 21 ALIENS
+objeto2[1] ={y1_mi+20};
+objeto3[1] ={y1_mi+40};
+
+objeto4[1] ={y1_mi};
+objeto5[1] ={y1_mi+20};
+objeto6[1] ={y1_mi+40};
+
+objeto7[1] ={y1_mi};
+objeto8[1] ={y1_mi+20};
+objeto9[1] ={y1_mi+40};
+
+objeto10[1]={y1_mi};
+objeto11[1]={y1_mi+20};
+objeto12[1]={y1_mi+40};
+
+objeto13[1]={y1_mi};
+objeto14[1]={y1_mi+20};
+objeto15[1]={y1_mi+40};
+
+objeto16[1]={y1_mi};
+objeto17[1]={y1_mi+20};
+objeto18[1]={y1_mi+40};
+
+objeto19[1]={y1_mi};
+objeto20[1]={y1_mi+20};
+objeto21[1]={y1_mi+40};
+
+posicion_bala[0]=xi_bala;   //Definicion de los objetos de las coordenadas de las balas de la nave 1
+posicion_bala[1]=y1_atack1;
 
 
-if(currentMillis - previousMillis2 > 250) {
+/*for(uint16_t x=30;x<=270;x=+30){
+   for(uint16_t y = y1_mi; y>=(y1_mi-40);y=-20){
+    uint16_t objeto[]={};
+    objeto[0]={x};
+    objeto[1]={y};
+    uint8_t d1[]={2,8};
+    uint8_t d2[]={10,10};
+    if(collider(posicion_bala,objeto,d1,d2)){
+      habilitar_disparo=true;
+      break;
+    }
+   }
+   if(habilitar_disparo){
+    break;
+   }
+}*/
+/*uint16_t objeto[]={};
+if(objeto[0]>270){
+  objeto[0]=30;
+  objeto[1]=+20;
+  if(objeto[1]>(y1_mi+40)){
+    objeto[1]=y1_mi;
+  }
+}else{
+  objeto[0]=+40;
+}*/
 
-  y1_atack1 = y1_atack1 - 1; 
+//%%%%%%%%%%%%%%%%%%% Ataque Nave 1 %%%%%%%%%%%%%%%%%%
 
-//----------------- MOV. BALAS --------------------    
-  if (flag_balas){
-  LCD_Bitmap(xi_bala, y1_atack1, 3, 15, BALA_dos);
-     H_line( xi_bala, y1_atack1+16, 3, 0x0000);               //coord.y + alto imagen+1     
-     V_line(xi_bala+2,y1_atack1, 15, 0x00);
-  }  
-
-
-
-  
-}
-
-//--------- Ataque Nave 1 -----------------------------
-
-  if(Estado_SW5 == LOW ){      //Ataque 1
-
+  if((habilitar_disparo == true)&&(Estado_SW5 == LOW )){      //Ataque 1
+    habilitar_disparo = false;
     flag_balas = 1;
-    flag_balas2 =1;
-
-    if(flag_balas2){
-      xi_bala = x1_i+9; //guarda la coord. x actual de la nave en movimiento!
-      flag_balas2 = 0;
-      }
+    xi_bala = x1_i+9; //guarda la coord. x actual de la nave en movimiento!
     
   //FillRect(x1_atack1,   y1_atack1, 3, 15,0xffff);            //Fillrect para borrar disparo finan donde choca con el alien
   //H_line( x1_atack1, y1_atack1+15, 3, 0x0000);               //coord.y + alto imagen
   
   //LCD_Bitmap(x1_atack1, y1_atack1, 3, 15, BALA_dos);
-    // H_line( x1_atack1, y1_atack1+16, 3, 0x0000);               //coord.y + alto imagen+1
+    // H_line( x1_atack1, y1_atack1+16, 3, 0x0000);             //coord.y + alto imagen+1
   
   }
 
+//----------------- MOV. BALAS Nave 1 --------------------   
+if((habilitar_disparo == false)) {
+  y1_atack1 = y1_atack1 - 1; 
+  if(y1_atack1==0){
+  habilitar_disparo=true;
+  y1_atack1=200;
+  flag_balas=0;
+}
+ 
+  if (flag_balas){
+  LCD_Bitmap(xi_bala, y1_atack1, 3, 15, BALA_uno);
+     H_line( xi_bala, y1_atack1+16, 3, 0x0000);               //coord.y + alto imagen+1     
+     V_line(xi_bala+2,y1_atack1, 15, 0x00);
+  }  
+  
+}
 
+n++;
+n=n%21;
+if(naves_choque(n)==1){
+  habilitar_disparo=true;
+  y1_atack1=200;
+  flag_balas=0;
+  
+}
+
+
+//%%%%%%%%%%%%%%%%%%% Ataque Nave 2 %%%%%%%%%%%%%%%%%%
+
+  if((habilitar_disparo2 == true)&&(Estado_SW6 == LOW )){      //Ataque 2
+    habilitar_disparo2 = false;
+    flag_balas2 = 1;
+    xi_bala2 = x2_i+9; //guarda la coord. x actual de la nave en movimiento!
+    
+  
+  }
+
+//----------------- MOV. BALAS Nave 2 --------------------   
+if((habilitar_disparo2 == false)) {
+  y2_atack2 = y2_atack2 - 1; 
+  if(y2_atack2==0){
+  habilitar_disparo=true;
+  y2_atack2=200;
+  flag_balas2=0;
+}
+ 
+  if (flag_balas2){
+  LCD_Bitmap(xi_bala2, y2_atack2, 3, 15, BALA_dos);
+     H_line( xi_bala2, y2_atack2+16, 3, 0x0000);               //coord.y + alto imagen+1     
+     V_line(xi_bala2+2,y2_atack2, 15, 0x00);
+  }  
+  
+}  
+
+n2++;
+n2=n2%21;
+if(naves_choque(n2)==1){
+  habilitar_disparo2=true;
+  y2_atack2=200;
+  flag_balas2=0;
+  
+}
   
 
 
-
-
-  
-
-
+ 
 // ---------------- Jugador 1 -----------------------
 
   if(Estado_SW1 == LOW && x1_i > 0){ //Izquierda
@@ -778,4 +903,137 @@ void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int 
     
     }
   digitalWrite(LCD_CS, HIGH);
+}
+
+
+// NUEVAS FUNCIONES ---------------------------------------------------------------------------
+
+uint8_t collider(uint16_t objeto1[], uint16_t objeto2[], uint8_t d1[] , uint8_t d2[]) {     //FUNCION PARA COMPAR CHOQUE BALA VS ALIEN
+  uint16_t dx;
+  uint16_t dy;
+  uint16_t objeto_x = abs((objeto1[0] + d1[0]) - (objeto2[0] + d2[0]));
+  uint16_t objeto_y = abs((objeto1[1] + d1[1]) - (objeto2[1] + d2[1]));
+  dx = abs(d1[0] + d2[0]);
+  dy = abs(d1[1] + d2[1]);
+  if (((objeto_x - dx) < 0) && ((objeto_y - dy) < 0)) {
+    return 1; //chocaron ambos ejes
+  } else {
+    return 0; //no choco
+  }
+}
+
+uint8_t naves_choque(uint8_t posicion){                                                     //FUNCION PARA CHOQUE C/NAVE INDIVIDUAL 
+  uint8_t temp;
+  switch(posicion){
+    
+    case 0:
+    temp=collider(posicion_bala,objeto1,d1,d2);
+    return temp;
+    break;
+    
+    case 1:
+    temp=collider(posicion_bala,objeto2,d1,d2);
+    return temp;
+    break;
+    
+    case 2:
+    temp=collider(posicion_bala,objeto3,d1,d2);
+    if(temp){
+      FillRect(objeto3[0],objeto3[1],20,20,0xFF); //------------------- alien de hasta abajo
+    }
+    return temp;
+    break;
+
+    case 3:
+    temp=collider(posicion_bala,objeto4,d1,d2);
+    return temp;
+    break;
+
+    case 4:
+    temp =collider(posicion_bala,objeto5,d1,d2);
+    return temp;
+    break;
+
+    case 5:
+    temp=collider(posicion_bala,objeto6,d1,d2);
+    return temp;
+    break;
+
+    case 6:
+    temp=collider(posicion_bala,objeto7,d1,d2);
+    return temp;
+    break;
+
+    case 7:
+    temp=collider(posicion_bala,objeto8,d1,d2);
+    return temp;
+    break;
+
+    case 8:
+    temp=collider(posicion_bala,objeto9,d1,d2);
+    return temp;
+    break;
+
+    case 9:
+    temp=collider(posicion_bala,objeto10,d1,d2);
+    return temp;
+    break;
+
+    case 10:
+    temp=collider(posicion_bala,objeto11,d1,d2);
+    return temp;
+    break;
+
+    case 11:
+    temp=collider(posicion_bala,objeto12,d1,d2);
+    return temp;
+    break;
+
+    case 12:
+    temp=collider(posicion_bala,objeto13,d1,d2);
+    return temp;
+    break;
+
+    case 13:
+    temp=collider(posicion_bala,objeto14,d1,d2);
+    return temp;
+    break;
+
+    case 14:
+    temp=collider(posicion_bala,objeto15,d1,d2);
+    return temp;
+    break;
+
+    case 15:
+    temp=collider(posicion_bala,objeto16,d1,d2);
+    return temp;
+    break;
+
+    case 16:
+    temp=collider(posicion_bala,objeto17,d1,d2);
+    return temp;
+    break;
+
+    case 17:
+    temp=collider(posicion_bala,objeto18,d1,d2);
+    return temp;
+    break;
+
+    case 18:
+    temp=collider(posicion_bala,objeto19,d1,d2);
+    return temp;
+    break;
+
+    case 19:
+    temp=collider(posicion_bala,objeto20,d1,d2);
+    return temp;
+    break;
+
+    case 20:
+    temp=collider(posicion_bala,objeto21,d1,d2);
+    return temp;
+    break;
+
+
+  }
 }
