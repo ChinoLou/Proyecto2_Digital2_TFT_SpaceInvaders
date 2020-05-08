@@ -73,6 +73,9 @@ uint8_t  x3_i = 0;
 uint16_t x2_i = 0;
 uint16_t y1_mi = 0;
 
+uint16_t  xi_bala = 0;
+uint16_t y1_atack1 = 0;
+
 
 uint8_t flag_juego = 0;
 int ESTADO1    = 0; //variable para antirebote principal
@@ -102,8 +105,12 @@ bool Estado_SW4 = 0;
 bool Estado_SW5 = 0;
 bool Estado_SW6 = 0;
   
-bool flag_start = 0;                    //bandera para escoger modo de juego
-unsigned long previousMillis = 0;       // will store last time LED was updated
+bool flag_start  = 0;                     //bandera para escoger modo de juego
+bool flag_balas  = 0; 
+bool flag_balas2 = 0;
+
+unsigned long previousMillis  = 0;       // will store last time 
+unsigned long previousMillis2 = 0;       // will store last time2
       
 
 //-------------------------------------------------------------------------
@@ -121,21 +128,26 @@ void setup() {
   
   // Entradas digitales para controlar el juego
   pinMode(START, INPUT_PULLUP);
-  pinMode(NEXT, INPUT_PULLUP);
+  pinMode(NEXT,  INPUT_PULLUP);
   pinMode(LED_R, OUTPUT);  
   pinMode(LED_G, OUTPUT);  
   pinMode(LED_B, OUTPUT);  
 
-  pinMode(BOTON1, INPUT);
-  pinMode(BOTON2, INPUT);
-  pinMode(BOTON3, INPUT);
-  pinMode(BOTON4, INPUT);
+  pinMode(BOTON1, INPUT_PULLUP);
+  pinMode(BOTON2, INPUT_PULLUP);
+  pinMode(BOTON3, INPUT_PULLUP);
+  pinMode(BOTON4, INPUT_PULLUP);
+  pinMode(BOTON5, INPUT_PULLUP);
+  pinMode(BOTON6, INPUT_PULLUP);
   // ------------------------------------------
   delay(1000);
   FillRect(97, 100, 126, 40,0x00);
   LCD_Bitmap(97, 100, 126, 40, Fondo_UNO);
 
-  x2_i = 301; //posx final para nave 2
+  x2_i      = 301; //posx final para nave 2
+  y1_atack1 = 200; //posy inicial para las balas 
+
+ // H_line( 10, 50+15, 20, 0xfff);
 
 
   
@@ -154,12 +166,16 @@ void loop() {
   Estado_SW2   = digitalRead(SW2);
   Estado_SW3   = digitalRead(SW3);
   Estado_SW4   = digitalRead(SW4);
+  Estado_SW6   = digitalRead(SW6);  //PC4 -->Atacke Nave 1
+  Estado_SW5   = digitalRead(SW5);  //PC5 -->Atacke Nave 2
+
 
 //------------------- Pantalla de Inicio y Start -------------------------------
 
   if(Estado_START == LOW){
     digitalWrite(LED_R, HIGH); 
     FillRect(0, 0, 319, 239,0x00);
+    
     
     String text1 = "SPACE INVADERS!";
     LCD_Print(text1, 45, 10, 2, 0xffff, 0x00); //0x421b);
@@ -241,6 +257,9 @@ void loop() {
    LCD_Bitmap(0, y1_mi, 18, 21, GALAGA_uno);
      V_line( 0-2,y1_mi, 21, 0x00);
 
+     unsigned long tiempo = millis(); 
+     return(tiempo); 
+
      */
 //--------------------------------------------------------------------------------
 
@@ -251,18 +270,25 @@ void loop() {
   Estado_SW2   = digitalRead(SW2);
   Estado_SW3   = digitalRead(SW3);
   Estado_SW4   = digitalRead(SW4);
+  Estado_SW6   = digitalRead(SW6);  //PC4 -->Atacke Nave 1
+  Estado_SW5   = digitalRead(SW5);  //PC5 -->Atacke Nave 2
 
   int anim1 = (x1_i/5)%2;
   //x2_i = 160;
 
-  
+  //x1_atack1 = x1_i+9 ;     //La coordenada de la nave del jugador 1 es igual a la coord. x de la bala + 9 para estar centrada
+
+
+
 // ---------------- Mov. Aliens -----------------------
 
   unsigned long currentMillis = millis();         //Funcion para Movimiento Aliens automático!!!
   if(currentMillis - previousMillis > 500) {
-    // save the last time you blinked the LED 
     y1_mi = y1_mi + 1; 
-    previousMillis = currentMillis; 
+    //y1_atack1 = y1_atack1 - 1; 
+    previousMillis  = currentMillis; 
+    previousMillis2 = previousMillis+5; 
+
 
 //------------------------------------------------
   LCD_Bitmap(30, y1_mi, 20, 20, ALIEN_uno);
@@ -328,25 +354,78 @@ void loop() {
     V_line( 270-2,y1_mi+20, 20, 0x00); 
 
   LCD_Bitmap(270, y1_mi+40, 20, 20, ALIEN_tres);
-    V_line( 270-2,y1_mi+40, 20, 0x00);       
+    V_line( 270-2,y1_mi+40, 20, 0x00); 
 
-//-------------- ************** ---------------------
+//----------------- MOV. BALAS --------------------    
+
+  //LCD_Bitmap(0, y1_mi+40,  3, 15, BALA_uno);
+     //H_line( 0 ,y1_mi+40,  3, 0x0000);
+      
+
+
+
+
+//-------------- ************** -----------------------
 }
+
+
+
+if(currentMillis - previousMillis2 > 250) {
+
+  y1_atack1 = y1_atack1 - 1; 
+
+//----------------- MOV. BALAS --------------------    
+  if (flag_balas){
+  LCD_Bitmap(xi_bala, y1_atack1, 3, 15, BALA_dos);
+     H_line( xi_bala, y1_atack1+16, 3, 0x0000);               //coord.y + alto imagen+1     
+     V_line(xi_bala+2,y1_atack1, 15, 0x00);
+  }  
+
+
+
+  
+}
+
+//--------- Ataque Nave 1 -----------------------------
+
+  if(Estado_SW5 == LOW ){      //Ataque 1
+
+    flag_balas = 1;
+    flag_balas2 =1;
+
+    if(flag_balas2){
+      xi_bala = x1_i+9; //guarda la coord. x actual de la nave en movimiento!
+      flag_balas2 = 0;
+      }
+    
+  //FillRect(x1_atack1,   y1_atack1, 3, 15,0xffff);            //Fillrect para borrar disparo finan donde choca con el alien
+  //H_line( x1_atack1, y1_atack1+15, 3, 0x0000);               //coord.y + alto imagen
+  
+  //LCD_Bitmap(x1_atack1, y1_atack1, 3, 15, BALA_dos);
+    // H_line( x1_atack1, y1_atack1+16, 3, 0x0000);               //coord.y + alto imagen+1
+  
+  }
+
+
+  
+
+
+
+
+  
 
 
 // ---------------- Jugador 1 -----------------------
 
-  if(Estado_SW1 == HIGH && x1_i > 0){ //Izquierda
+  if(Estado_SW1 == LOW && x1_i > 0){ //Izquierda
       x1_i = x1_i-1; 
       }
-
       LCD_Bitmap(x1_i, 220, 18, 21, GALAGA_uno);
        V_line( x1_i-2, 220, 21, 0x00);
 
-   if(Estado_SW2 == HIGH && x1_i < 160-18){ //Derecha
-      x1_i = x1_i+1;
+   if(Estado_SW2 == LOW && x1_i < 160-18){ //Derecha
+      x1_i = x1_i+1;   
       }
-
       LCD_Bitmap(x1_i, 220, 18, 21, GALAGA_uno);
        V_line( x1_i+1, 220, 21, 0x00);
 
@@ -354,7 +433,7 @@ void loop() {
 
 
 
-  if(Estado_SW3 == HIGH && x2_i > 160){ //der
+  if(Estado_SW3 == LOW && x2_i > 160){ //der
       x2_i = x2_i-1; 
       //delay(2);
       }
@@ -362,7 +441,7 @@ void loop() {
       LCD_Bitmap(x2_i, 220, 18, 21, GALAGA_dos);
         V_line( x2_i-1,220,   21, 0x00);
 
-   if(Estado_SW4 == HIGH && x2_i < 320-18){ //Derecha
+   if(Estado_SW4 == LOW && x2_i < 320-18){ //Derecha
       x2_i = x2_i+1;
       //delay(2);
       }
