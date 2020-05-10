@@ -6,6 +6,7 @@
  * Steven Josue Castillo Lou - 17169
  * Vincenzo Musella 
  * (solo falta sd y comparacion balas 2)
+ * FINAL!
  */
 //***************************************************************************************************************************************
 #include <stdint.h>
@@ -68,6 +69,9 @@ uint8_t collider(uint16_t objeto1[], uint16_t objeto2[], uint8_t d1[] , uint8_t 
 void LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char bitmap[]);
 void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
 uint8_t naves_choque(uint8_t posicion);
+
+void SD_Bitmap(int x, int y, int width, int height, char *filename);
+unsigned char Char_to_uChar(char letra); 
 
 extern uint8_t Fondo_UNO_X2 [];
 extern uint8_t ALIEN_uno    [];
@@ -165,9 +169,21 @@ uint16_t objeto21[]= {270,0};
 uint8_t  choque[] = {};
 int  n = 0; 
 int  n2= 0;
-uint8_t d1[]={2,8};
+uint8_t d1[]={2,8};   //para la funcion collier
 uint8_t d2[]={10,10};
 
+// ------------ Variables SD ---------------------------------------------
+/*
+File root;
+File myFile;
+Sd2Card card;
+char I;
+char J;
+uint8_t V = 0;
+char H;
+int cont = 2;
+int defnum = 1;
+*/
 
 //***************************************************************************************************************************************
 // Inicialización
@@ -199,11 +215,48 @@ void setup() {
   pinMode(Music2_ON,  OUTPUT); //Pin PE_2 --> a entrada2 arduino
 
 
+  //%%%%%%%%%%%%% SD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ /* 
+  // Open serial communications and wait for port to open:
+  SPI.setModule(0);
+
+ while (!Serial) {
+    ; // wait for serial port to connect. Needed for Leonardo only
+  }
+ 
+  Serial.print("Initializing Vinni´s SD card");
+  // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
+  // Note that even if it's not used as the CS pin, the hardware SS pin
+  // (10 on most Arduino boards, 53 on the Mega) must be left as an output
+  // or the SD library functions will not work.
+  pinMode(10, OUTPUT);
+
+  if (!SD.begin(32)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("...WAITING...");
+  Serial.println("");
+  Serial.println("Initialization done.");
+  Serial.println("");
+  //root = SD.open("/");
+
+  //printDirectory(root, 0);
+  //showfile();
+
+  Serial.println("Listado de archivos finalizado!");
+  Serial.println("");
+  */
+  
+
+
   // ------------------------------------------
   delay(1000);
+
+  //SD_Bitmap(97, 100, 126, 40, "FD.txt");
   
-  FillRect(97, 100, 126, 40,0x00);
   //LCD_Bitmap(97, 100, 126, 40, Fondo_UNO); 
+  FillRect(97, 100, 126, 40,0x00);
   LCD_Bitmap(34, 80, 252, 80, Fondo_UNO_X2);
   digitalWrite(Music1_ON, HIGH);
 
@@ -335,8 +388,9 @@ void loop() {
 
 
 // ---------------- Mov. Aliens -----------------------
+//Funcion para Movimiento Aliens automático!!!
 
-  unsigned long currentMillis = millis();         //Funcion para Movimiento Aliens automático!!!
+  unsigned long currentMillis = millis();         
   if(currentMillis - previousMillis > 500) {
     y1_mi = y1_mi + 1; 
     previousMillis  = currentMillis; 
@@ -945,7 +999,7 @@ uint8_t collider(uint16_t objeto1[], uint16_t objeto2[], uint8_t d1[] , uint8_t 
   }
 }
 
-uint8_t naves_choque(uint8_t posicion){                                                     //FUNCION PARA CHOQUE C/NAVE INDIVIDUAL 
+uint8_t naves_choque(uint8_t posicion){                         //FUNCION PARA CHOQUE C/NAVE INDIVIDUAL 
   uint8_t temp;
   switch(posicion){
     
@@ -962,7 +1016,7 @@ uint8_t naves_choque(uint8_t posicion){                                         
     case 2:
     temp=collider(posicion_bala,objeto3,d1,d2);
     if(temp){
-      FillRect(objeto3[0],objeto3[1],20,20,0xFF); //------------------- alien de hasta abajo
+      FillRect(objeto3[0],objeto3[1],20,20,0xFF); //------------------- alien de la fila de hasta abajo
     }
     return temp;
     break;
@@ -979,6 +1033,9 @@ uint8_t naves_choque(uint8_t posicion){                                         
 
     case 5:
     temp=collider(posicion_bala,objeto6,d1,d2);
+    if(temp){
+      FillRect(objeto6[0],objeto6[1],20,20,0x00); //------------------- alien de la fila de hasta abajo
+    }
     return temp;
     break;
 
@@ -1060,3 +1117,77 @@ uint8_t naves_choque(uint8_t posicion){                                         
 
   }
 }
+
+
+//**********************  Funciones SD 
+//**********************
+/*
+
+unsigned char Char_to_uChar(char letra){
+  unsigned char num;
+  if(letra>=48 && letra <=57){
+    num = letra - 48;
+  }
+  else if (letra >= 97 && letra <=102){
+    num = letra -87;
+  }
+  return num;
+}
+void SD_Bitmap(int x, int y, int width, int height, char *filename){
+  uint16_t SD_x;
+  uint16_t SD_y;
+  uint16_t ent;
+  uint16_t contador = 1;
+  uint16_t temp;
+  uint16_t temp2;
+  uint16_t linea_salto = 1;
+  myFile = SD.open(filename);
+  LCD_CMD(0x02c); //write_memory_start
+  digitalWrite(LCD_RS, HIGH);
+  digitalWrite(LCD_CS, LOW);
+  SetWindows(x,y,x+width-1,y+height-1);
+  if (myFile){
+    SD_x = x;
+    SD_y = y;
+    while (myFile.available()) {
+      uint16_t leer = myFile.read();
+      leer = Char_to_uChar(leer);
+        if (contador == 1){
+          temp2 = leer << 12;
+          temp = temp2;
+          contador++;
+        }
+        else if (contador == 2){
+          temp2 = leer << 8;
+          temp = temp+temp2;
+          contador++;
+        }
+        else if (contador == 3){
+          temp2 = leer<<4;
+          temp = temp+temp2;
+          contador++;
+        }
+        else if (contador == 4){
+          linea_salto++;
+          contador = 1;
+          temp = temp+leer;
+          LCD_DATA(temp>>8);
+          LCD_DATA(temp);
+          SD_x = SD_x+1;
+          if(SD_x==((x+width))){
+            SD_x = x;
+            SD_y = SD_y+1;
+          }
+        }
+        
+          else;
+        }
+      
+      digitalWrite(LCD_CS, HIGH);
+      myFile.close();
+  }
+  
+  else{
+    Serial.print("error opening ");
+  }
+} */
